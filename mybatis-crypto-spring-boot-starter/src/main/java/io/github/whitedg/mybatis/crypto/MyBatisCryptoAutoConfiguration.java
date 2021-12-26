@@ -13,15 +13,15 @@ import org.springframework.context.annotation.Configuration;
 public class MyBatisCryptoAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(MybatisCryptoEncryptionInterceptor.class)
-    public MybatisCryptoEncryptionInterceptor encryptionInterceptor(MybatisCryptoProperties properties) {
-        return new MybatisCryptoEncryptionInterceptor(properties.toMybatisCryptoConfig());
+    @ConditionalOnMissingBean(MybatisEncryptionPlugin.class)
+    public MybatisEncryptionPlugin encryptionInterceptor(MybatisCryptoProperties properties) {
+        return new MybatisEncryptionPlugin(properties.toMybatisCryptoConfig());
     }
 
     @Bean
-    @ConditionalOnMissingBean(MybatisCryptoDecryptionInterceptor.class)
-    public MybatisCryptoDecryptionInterceptor decryptionInterceptor(MybatisCryptoProperties properties) {
-        return new MybatisCryptoDecryptionInterceptor(properties.toMybatisCryptoConfig());
+    @ConditionalOnMissingBean(MybatisDecryptionPlugin.class)
+    public MybatisDecryptionPlugin decryptionInterceptor(MybatisCryptoProperties properties) {
+        return new MybatisDecryptionPlugin(properties.toMybatisCryptoConfig());
     }
 
 }

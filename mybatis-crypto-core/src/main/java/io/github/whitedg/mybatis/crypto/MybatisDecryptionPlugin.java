@@ -17,15 +17,15 @@ import java.util.Set;
 @Intercepts({
         @Signature(type = ResultSetHandler.class, method = "handleResultSets", args = {Statement.class})
 })
-public class MybatisCryptoDecryptionInterceptor implements Interceptor {
+public class MybatisDecryptionPlugin implements Interceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(MybatisCryptoDecryptionInterceptor.class);
+    private static final Logger log = LoggerFactory.getLogger(MybatisDecryptionPlugin.class);
 
     private final boolean failFast;
     private final String defaultKey;
     private final Class<? extends IEncryptor> defaultEncryptor;
 
-    public MybatisCryptoDecryptionInterceptor(MybatisCryptoConfig myBatisCryptoConfig) {
+    public MybatisDecryptionPlugin(MybatisCryptoConfig myBatisCryptoConfig) {
         this.failFast = myBatisCryptoConfig.isFailFast();
         this.defaultKey = myBatisCryptoConfig.getDefaultKey();
         this.defaultEncryptor = myBatisCryptoConfig.getDefaultEncryptor();

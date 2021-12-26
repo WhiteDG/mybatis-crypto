@@ -17,16 +17,16 @@ import java.util.*;
 @Intercepts({
         @Signature(type = Executor.class, method = "update", args = {MappedStatement.class, Object.class})
 })
-public class MybatisCryptoEncryptionInterceptor implements Interceptor {
+public class MybatisEncryptionPlugin implements Interceptor {
 
-    private static final Logger log = LoggerFactory.getLogger(MybatisCryptoEncryptionInterceptor.class);
+    private static final Logger log = LoggerFactory.getLogger(MybatisEncryptionPlugin.class);
 
     private final List<String> mappedKeyPrefixes;
     private final boolean failFast;
     private final String defaultKey;
     private final Class<? extends IEncryptor> defaultEncryptor;
 
-    public MybatisCryptoEncryptionInterceptor(MybatisCryptoConfig myBatisCryptoConfig) {
+    public MybatisEncryptionPlugin(MybatisCryptoConfig myBatisCryptoConfig) {
         this.mappedKeyPrefixes = myBatisCryptoConfig.getMappedKeyPrefixes();
         this.failFast = myBatisCryptoConfig.isFailFast();
         this.defaultKey = myBatisCryptoConfig.getDefaultKey();
