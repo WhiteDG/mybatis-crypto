@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author White
  */
-@ConfigurationProperties(prefix = "mybatis.crypto")
+@ConfigurationProperties(prefix = "mybatis-crypto")
 public class MybatisCryptoProperties {
 
     private List<String> mappedKeyPrefixes;
