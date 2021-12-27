@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.github.whitedg.demo.mapper.UserMapper">
+
+    <insert id="insert" parameterType="io.github.whitedg.demo.entity.User"
+            keyProperty="id" useGeneratedKeys="true" keyColumn="id">
+        insert into user (id, name, email, password)
+        values (NULL, #{name}, #{email}, #{password})
+    </insert>
+
+    <update id="updateById">
+        update user
+        set name=#{et.name},
+            email=#{et.email},
+            password=#{et.password}
+        where id = #{et.id}
+    </update>
+
+    <select id="selectById" resultType="io.github.whitedg.demo.entity.User">
+        select *
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="selectAll" resultType="io.github.whitedg.demo.entity.User">
+        select *
+        from user
+    </select>
+</mapper>
