@@ -40,7 +40,7 @@ public class UserController {
     public List<User> getList() {
         return userMapper.selectAll();
     }
-    
+
     @GetMapping("map/{id}")
     public Map<Long, ?> getMap(@PathVariable("id") Long id) {
         return userMapper.selectMap(id);

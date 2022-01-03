@@ -36,6 +36,7 @@
     <modules>
         <module>mybatis-crypto-core</module>
         <module>mybatis-crypto-spring-boot-starter</module>
+        <module>mybatis-crypto-encryptors</module>
     </modules>
 
     <properties>

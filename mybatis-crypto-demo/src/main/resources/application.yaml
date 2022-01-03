@@ -16,9 +16,11 @@ spring:
 
 mybatis-crypto:
   fail-fast: true
-  default-encryptor: io.github.whitedg.demo.encryptor.MyEncryptor
+  default-encryptor: io.github.whitedg.mybatis.crypto.AES256Encryptor
   default-key: DEFAULT-KEY
   mapped-key-prefixes: et, encrypted
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
