@@ -40,15 +40,20 @@ public class MybatisDecryptionPlugin implements Interceptor {
         if (result instanceof ArrayList) {
             //noinspection rawtypes
             ArrayList resultList = (ArrayList) result;
-            if (!resultList.isEmpty()) {
-                Object firstItem = resultList.get(0);
-                boolean needToDecrypt = Util.decryptionRequired(firstItem);
-                if (needToDecrypt) {
-                    Set<Field> encryptedFields = EncryptedFieldsProvider.get(firstItem.getClass());
-                    for (Object item : resultList) {
-                        decryptEntity(encryptedFields, item);
-                    }
-                }
+            if (resultList.isEmpty()) {
+                return result;
+            }
+            Object firstItem = resultList.get(0);
+            boolean needToDecrypt = Util.decryptionRequired(firstItem);
+            if (!needToDecrypt) {
+                return result;
+            }
+            Set<Field> encryptedFields = EncryptedFieldsProvider.get(firstItem.getClass());
+            if (encryptedFields == null || encryptedFields.isEmpty()) {
+                return result;
+            }
+            for (Object item : resultList) {
+                decryptEntity(encryptedFields, item);
             }
         } else {
             if (Util.decryptionRequired(result)) {

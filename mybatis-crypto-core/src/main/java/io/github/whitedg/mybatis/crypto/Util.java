@@ -21,6 +21,9 @@ class Util {
     }
 
     public static boolean decryptionRequired(Object parameter) {
-        return !(parameter == null || parameter instanceof Double || parameter instanceof Integer || parameter instanceof Long || parameter instanceof Boolean);
+        return !(parameter == null || parameter instanceof Double || parameter instanceof Integer
+                || parameter instanceof Long || parameter instanceof Short || parameter instanceof Float
+                || parameter instanceof Boolean || parameter instanceof Character
+                || parameter instanceof Byte);
     }
 }

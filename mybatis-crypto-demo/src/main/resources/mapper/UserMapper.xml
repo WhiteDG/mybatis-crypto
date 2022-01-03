@@ -26,4 +26,10 @@
         select *
         from user
     </select>
+
+    <select id="selectMap" resultType="io.github.whitedg.demo.entity.User">
+        select *
+        from user
+        where id = #{id}
+    </select>
 </mapper>

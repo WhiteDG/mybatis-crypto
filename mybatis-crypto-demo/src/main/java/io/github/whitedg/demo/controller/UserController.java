@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author White
@@ -35,8 +36,13 @@ public class UserController {
         return userMapper.selectById(id);
     }
 
-    @GetMapping()
+    @GetMapping
     public List<User> getList() {
         return userMapper.selectAll();
+    }
+    
+    @GetMapping("map/{id}")
+    public Map<Long, ?> getMap(@PathVariable("id") Long id) {
+        return userMapper.selectMap(id);
     }
 }

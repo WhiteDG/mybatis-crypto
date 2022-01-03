@@ -41,6 +41,7 @@ public class MybatisEncryptionPlugin implements Interceptor {
         Object parameter = args[1];
         if (Util.encryptionRequired(parameter, sqlCommandType)) {
             if (parameter instanceof MapperMethod.ParamMap) {
+                //noinspection unchecked
                 MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
                 encryptParamMap(paramMap);
             } else {
@@ -89,23 +90,24 @@ public class MybatisEncryptionPlugin implements Interceptor {
         }
         for (Field field : encryptedFields) {
             EncryptedField encryptedField = field.getAnnotation(EncryptedField.class);
-            if (encryptedField != null) {
-                try {
-                    String key = Util.getKey(encryptedField, defaultKey);
-                    IEncryptor iEncryptor = EncryptorProvider.get(encryptedField, defaultEncryptor);
-                    field.setAccessible(true);
-                    Object originalVal = field.get(entry);
-                    if (originalVal == null) {
-                        continue;
-                    }
-                    String encryptedVal = iEncryptor.encrypt(originalVal, key);
-                    field.set(entry, encryptedVal);
-                } catch (Exception e) {
-                    if (failFast) {
-                        throw new MybatisCryptoException(e);
-                    } else {
-                        log.warn("process encrypted filed error.", e);
-                    }
+            if (encryptedField == null) {
+                continue;
+            }
+            try {
+                String key = Util.getKey(encryptedField, defaultKey);
+                IEncryptor iEncryptor = EncryptorProvider.get(encryptedField, defaultEncryptor);
+                field.setAccessible(true);
+                Object originalVal = field.get(entry);
+                if (originalVal == null) {
+                    continue;
+                }
+                String encryptedVal = iEncryptor.encrypt(originalVal, key);
+                field.set(entry, encryptedVal);
+            } catch (Exception e) {
+                if (failFast) {
+                    throw new MybatisCryptoException(e);
+                } else {
+                    log.warn("process encrypted filed error.", e);
                 }
             }
         }
