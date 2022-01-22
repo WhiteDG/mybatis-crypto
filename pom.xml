@@ -9,6 +9,7 @@
     <packaging>pom</packaging>
     <version>1.0.0</version>
     <name>Mybatis Crypto</name>
+    <description>Mybatis Crypto</description>
     <url>https://github.com/WhiteDG/mybatis-crypto</url>
 
     <licenses>
@@ -168,6 +169,13 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <!-- Prevent `gpg` from using pinentry programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
