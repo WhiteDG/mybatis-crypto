@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.whitedg</groupId>
     <artifactId>mybatis-crypto-demo</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>Mybatis Crypto Demo</name>
     <properties>
         <java.version>1.8</java.version>
@@ -44,12 +44,12 @@
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-spring-boot-starter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-encryptors</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
         <dependency>
