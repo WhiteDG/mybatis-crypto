@@ -1,5 +1,12 @@
 # mybatis-crypto
 
+<p align="center">
+<a href="https://github.com/WhiteDG/mybatis-crypto/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/WhiteDG/mybatis-crypto.svg?style=flat-square&label=latest version"/></a>
+<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/WhiteDG/mybatis-crypto?style=flat-square">
+<a href="https://github.com/WhiteDG/mybatis-crypto/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/WhiteDG/mybatis-crypto/Release?style=flat-square"/></a>
+</p>
+
+## 简介
 `mybatis-crypto` 是一个基于 mybatis 插件机制实现的字段加解密组件，通过一个注解即可对敏感数据进行加解密处理。 支持自定义 `Encryptor`、特殊字段单独指定 `Encryptor` 和 `key`
 ，满足大部分使用场景。
 
@@ -20,7 +27,7 @@
 <dependency>
     <groupId>io.github.whitedg</groupId>
     <artifactId>mybatis-crypto-spring-boot-starter</artifactId>
-    <version>${mybatis-crypto.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
@@ -52,7 +59,7 @@ public class MyEncryptor implements IEncryptor {
 <dependency>
     <groupId>io.github.whitedg</groupId>
     <artifactId>mybatis-crypto-encryptors</artifactId>
-    <version>${mybatis-crypto.version}</version>
+    <version>${latest.version}</version>
 </dependency>
 ```
 
