@@ -1,9 +1,9 @@
 package io.github.whitedg.mybatis.crypto;
 
+import com.esotericsoftware.kryo.kryo5.Kryo;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.apache.ibatis.plugin.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,18 +37,41 @@ public class MybatisEncryptionPlugin implements Interceptor {
     public Object intercept(Invocation invocation) throws Throwable {
         Object[] args = invocation.getArgs();
         MappedStatement ms = (MappedStatement) args[0];
-        SqlCommandType sqlCommandType = ms.getSqlCommandType();
         Object parameter = args[1];
-        if (Util.encryptionRequired(parameter, sqlCommandType)) {
-            if (parameter instanceof MapperMethod.ParamMap) {
-                //noinspection unchecked
-                MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
-                encryptParamMap(paramMap);
-            } else {
-                encryptEntity(parameter);
+        if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
+            Kryo kryo = null;
+            try {
+                kryo = KryoPool.obtain();
+                Object copiedParameter = kryo.copy(parameter);
+                boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
+                if (isParamMap) {
+                    //noinspection unchecked
+                    MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) copiedParameter;
+                    encryptParamMap(paramMap);
+                } else {
+                    encryptEntity(copiedParameter);
+                }
+                args[1] = copiedParameter;
+                Object result = invocation.proceed();
+                if (!isParamMap) {
+                    handleKeyProperties(ms, parameter, copiedParameter);
+                }
+                return result;
+            } finally {
+                if (kryo != null) {
+                    KryoPool.free(kryo);
+                }
             }
+        } else {
+            return invocation.proceed();
         }
-        return invocation.proceed();
+    }
+
+    private void handleKeyProperties(MappedStatement ms, Object parameter, Object copyOfParameter) throws IllegalAccessException {
+        List<Field> keyFields = KeyFieldsProvider.get(ms, copyOfParameter);
+        for (Field keyField : keyFields) {
+            keyField.set(parameter, keyField.get(copyOfParameter));
+        }
     }
 
     private void encryptEntity(Object parameter) throws MybatisCryptoException {
@@ -96,7 +119,6 @@ public class MybatisEncryptionPlugin implements Interceptor {
             try {
                 String key = Util.getKey(encryptedField, defaultKey);
                 IEncryptor iEncryptor = EncryptorProvider.get(encryptedField, defaultEncryptor);
-                field.setAccessible(true);
                 Object originalVal = field.get(entry);
                 if (originalVal == null) {
                     continue;

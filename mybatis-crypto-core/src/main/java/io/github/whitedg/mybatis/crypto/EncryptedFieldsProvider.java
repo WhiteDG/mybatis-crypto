@@ -17,9 +17,13 @@ class EncryptedFieldsProvider {
     public static Set<Field> get(Class<?> parameterClass) {
         return encryptedFieldCache.computeIfAbsent(parameterClass, aClass -> {
             Field[] declaredFields = aClass.getDeclaredFields();
-            return Arrays.stream(declaredFields).filter(field ->
+            Set<Field> fieldSet = Arrays.stream(declaredFields).filter(field ->
                             field.isAnnotationPresent(EncryptedField.class) && field.getType() == String.class)
                     .collect(Collectors.toSet());
+            for (Field field : fieldSet) {
+                field.setAccessible(true);
+            }
+            return fieldSet;
         });
     }
 }
