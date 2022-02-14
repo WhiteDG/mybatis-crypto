@@ -8,7 +8,7 @@ import com.esotericsoftware.kryo.kryo5.util.Pool;
 /**
  * @author White
  */
-public class KryoPool {
+class KryoPool {
     private static final Pool<Kryo> kryoPool = new Pool<Kryo>(true, false, Integer.MAX_VALUE) {
         protected Kryo create() {
             return newKryo();
