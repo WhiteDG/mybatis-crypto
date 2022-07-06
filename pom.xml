@@ -7,7 +7,7 @@
     <groupId>io.github.whitedg</groupId>
     <artifactId>mybatis-crypto</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <name>Mybatis Crypto</name>
     <description>Mybatis Crypto</description>
     <url>https://github.com/WhiteDG/mybatis-crypto</url>

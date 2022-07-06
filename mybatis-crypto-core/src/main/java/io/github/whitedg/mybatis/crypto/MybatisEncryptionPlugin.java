@@ -117,8 +117,8 @@ public class MybatisEncryptionPlugin implements Interceptor {
                 continue;
             }
             try {
-                String key = Util.getKey(encryptedField, defaultKey);
-                IEncryptor iEncryptor = EncryptorProvider.get(encryptedField, defaultEncryptor);
+                String key = Util.getKeyOrDefault(encryptedField, defaultKey);
+                IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
                 Object originalVal = field.get(entry);
                 if (originalVal == null) {
                     continue;

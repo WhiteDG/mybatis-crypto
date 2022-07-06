@@ -7,7 +7,7 @@ import org.apache.ibatis.mapping.SqlCommandType;
  */
 class Util {
 
-    public static String getKey(EncryptedField encryptedField, String defaultKey) {
+    public static String getKeyOrDefault(EncryptedField encryptedField, String defaultKey) {
         String key = encryptedField.key();
         if (key == null || key.equals("")) {
             return defaultKey == null ? "" : defaultKey;

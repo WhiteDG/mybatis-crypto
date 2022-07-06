@@ -9,7 +9,7 @@ class EncryptorProvider {
 
     private static final ConcurrentHashMap<EncryptedField, IEncryptor> CACHE = new ConcurrentHashMap<>();
 
-    public static IEncryptor get(EncryptedField encryptedField, Class<? extends IEncryptor> globalDefaultEncryptor) {
+    public static IEncryptor getOrDefault(EncryptedField encryptedField, Class<? extends IEncryptor> globalDefaultEncryptor) {
         // globalDefaultEncryptor is always the same object
         return CACHE.computeIfAbsent(encryptedField, ignored -> {
             try {

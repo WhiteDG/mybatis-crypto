@@ -10,10 +10,19 @@ import java.util.List;
 @ConfigurationProperties(prefix = "mybatis-crypto")
 public class MybatisCryptoProperties {
 
+    private boolean enabled = true;
     private List<String> mappedKeyPrefixes;
     private boolean failFast = true;
     private String defaultKey;
     private Class<? extends IEncryptor> defaultEncryptor;
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public Class<? extends IEncryptor> getDefaultEncryptor() {
         return defaultEncryptor;

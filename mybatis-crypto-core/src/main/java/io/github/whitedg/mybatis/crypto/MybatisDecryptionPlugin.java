@@ -71,8 +71,8 @@ public class MybatisDecryptionPlugin implements Interceptor {
             EncryptedField encryptedField = field.getAnnotation(EncryptedField.class);
             if (encryptedField != null) {
                 try {
-                    String key = Util.getKey(encryptedField, defaultKey);
-                    IEncryptor iEncryptor = EncryptorProvider.get(encryptedField, defaultEncryptor);
+                    String key = Util.getKeyOrDefault(encryptedField, defaultKey);
+                    IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
                     field.setAccessible(true);
                     Object originalVal = field.get(item);
                     if (originalVal != null) {

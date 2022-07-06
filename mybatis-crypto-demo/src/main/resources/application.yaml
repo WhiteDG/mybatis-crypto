@@ -15,6 +15,7 @@ spring:
       schema-locations: classpath:db/schema.sql
 
 mybatis-crypto:
+  enabled: true
   fail-fast: true
   default-encryptor: io.github.whitedg.mybatis.crypto.AES256Encryptor
   default-key: DEFAULT-KEY
