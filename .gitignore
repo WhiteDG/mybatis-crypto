@@ -57,3 +57,5 @@ nbdist/
 
 ### VSCode
 .vscode
+
+.flattened-pom.xml

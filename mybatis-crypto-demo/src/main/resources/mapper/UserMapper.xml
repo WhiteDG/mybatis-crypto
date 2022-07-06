@@ -4,12 +4,12 @@
 
     <insert id="insert" parameterType="io.github.whitedg.demo.entity.User"
             keyProperty="id" useGeneratedKeys="true" keyColumn="id">
-        insert into user (id, name, email, password, id_card_no)
-        values (NULL, #{name}, #{email}, #{password}, #{idCardNo})
+        insert into t_user (name, email, password, id_card_no)
+        values (#{name}, #{email}, #{password}, #{idCardNo})
     </insert>
 
     <update id="updateById">
-        update user
+        update t_user
         set name=#{et.name},
             email=#{et.email},
             password=#{et.password},
@@ -19,18 +19,18 @@
 
     <select id="selectById" resultType="io.github.whitedg.demo.entity.User">
         select *
-        from user
+        from t_user
         where id = #{id}
     </select>
 
     <select id="selectAll" resultType="io.github.whitedg.demo.entity.User">
         select *
-        from user
+        from t_user
     </select>
 
     <select id="selectMap" resultType="io.github.whitedg.demo.entity.User">
         select *
-        from user
+        from t_user
         where id = #{id}
     </select>
 </mapper>
