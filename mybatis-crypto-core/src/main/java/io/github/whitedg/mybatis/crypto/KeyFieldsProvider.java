@@ -29,7 +29,7 @@ class KeyFieldsProvider {
                     fields.add(field);
                 }
             } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
+                throw new MybatisCryptoException(e);
             }
             return fields;
         });

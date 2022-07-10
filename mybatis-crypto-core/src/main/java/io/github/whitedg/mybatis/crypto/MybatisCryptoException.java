@@ -3,7 +3,7 @@ package io.github.whitedg.mybatis.crypto;
 /**
  * @author White
  */
-public class MybatisCryptoException extends Exception {
+public class MybatisCryptoException extends RuntimeException {
 
     public MybatisCryptoException() {
     }

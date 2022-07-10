@@ -17,7 +17,7 @@ class EncryptorProvider {
                 Class<? extends IEncryptor> encryptor = specifiedEncryptor == IEncryptor.class ? globalDefaultEncryptor : specifiedEncryptor;
                 return encryptor.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                throw new MybatisCryptoException(e);
             }
         });
     }
