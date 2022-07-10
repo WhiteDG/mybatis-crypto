@@ -15,6 +15,7 @@ public class MybatisCryptoProperties {
     private boolean failFast = true;
     private String defaultKey;
     private Class<? extends IEncryptor> defaultEncryptor;
+    private String typePackages;
 
     public boolean isEnabled() {
         return enabled;
@@ -54,6 +55,14 @@ public class MybatisCryptoProperties {
 
     public void setMappedKeyPrefixes(List<String> mappedKeyPrefixes) {
         this.mappedKeyPrefixes = mappedKeyPrefixes;
+    }
+
+    public String getTypePackages() {
+        return typePackages;
+    }
+
+    public void setTypePackages(String typePackages) {
+        this.typePackages = typePackages;
     }
 
     private void validate() {
