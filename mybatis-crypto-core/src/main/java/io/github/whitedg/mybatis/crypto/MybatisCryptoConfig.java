@@ -10,12 +10,15 @@ public class MybatisCryptoConfig {
     private boolean failFast;
     private String defaultKey;
     private Class<? extends IEncryptor> defaultEncryptor;
+    private boolean keepParameter;
 
-    public MybatisCryptoConfig(List<String> mappedKeyPrefixes, boolean failFast, String defaultKey, Class<? extends IEncryptor> defaultEncryptor) {
+    public MybatisCryptoConfig(List<String> mappedKeyPrefixes, boolean failFast, String defaultKey,
+                               Class<? extends IEncryptor> defaultEncryptor, boolean keepParameter) {
         this.mappedKeyPrefixes = mappedKeyPrefixes;
         this.failFast = failFast;
         this.defaultKey = defaultKey;
         this.defaultEncryptor = defaultEncryptor;
+        this.keepParameter = keepParameter;
         afterPropertiesSet();
     }
 
@@ -55,5 +58,13 @@ public class MybatisCryptoConfig {
 
     public Class<? extends IEncryptor> getDefaultEncryptor() {
         return defaultEncryptor;
+    }
+
+    public boolean isKeepParameter() {
+        return keepParameter;
+    }
+
+    public void setKeepParameter(boolean keepParameter) {
+        this.keepParameter = keepParameter;
     }
 }

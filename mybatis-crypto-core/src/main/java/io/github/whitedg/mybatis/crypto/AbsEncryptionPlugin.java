@@ -23,12 +23,14 @@ public class AbsEncryptionPlugin implements Interceptor {
     private final boolean failFast;
     private final String defaultKey;
     private final Class<? extends IEncryptor> defaultEncryptor;
+    private final boolean keepParameter;
 
     public AbsEncryptionPlugin(MybatisCryptoConfig myBatisCryptoConfig) {
         this.mappedKeyPrefixes = myBatisCryptoConfig.getMappedKeyPrefixes();
         this.failFast = myBatisCryptoConfig.isFailFast();
         this.defaultKey = myBatisCryptoConfig.getDefaultKey();
         this.defaultEncryptor = myBatisCryptoConfig.getDefaultEncryptor();
+        this.keepParameter = myBatisCryptoConfig.isKeepParameter();
     }
 
     @Override
@@ -39,8 +41,11 @@ public class AbsEncryptionPlugin implements Interceptor {
         if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
             Kryo kryo = null;
             try {
-                kryo = KryoPool.obtain();
-                Object execParam = kryo.copy(parameter);
+                Object execParam = parameter;
+                if (keepParameter) {
+                    kryo = KryoPool.obtain();
+                    execParam = kryo.copy(parameter);
+                }
                 boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
                 if (isParamMap) {
                     //noinspection unchecked

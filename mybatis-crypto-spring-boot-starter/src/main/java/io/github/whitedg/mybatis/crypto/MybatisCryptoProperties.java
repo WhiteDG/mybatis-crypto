@@ -16,6 +16,7 @@ public class MybatisCryptoProperties {
     private String defaultKey;
     private Class<? extends IEncryptor> defaultEncryptor;
     private String typePackages;
+    private boolean keepParameter;
 
     public boolean isEnabled() {
         return enabled;
@@ -65,6 +66,14 @@ public class MybatisCryptoProperties {
         this.typePackages = typePackages;
     }
 
+    public boolean isKeepParameter() {
+        return keepParameter;
+    }
+
+    public void setKeepParameter(boolean keepParameter) {
+        this.keepParameter = keepParameter;
+    }
+
     private void validate() {
         if (defaultKey == null || defaultKey.trim().equals("")) {
             throw new IllegalStateException("mybatis.crypto.default-key missing");
@@ -80,7 +89,7 @@ public class MybatisCryptoProperties {
         if (mybatisCryptoConfig == null) {
             validate();
             mybatisCryptoConfig = new MybatisCryptoConfig(this.mappedKeyPrefixes, this.failFast,
-                    this.defaultKey, this.defaultEncryptor);
+                    this.defaultKey, this.defaultEncryptor, this.keepParameter);
         }
         return mybatisCryptoConfig;
     }
