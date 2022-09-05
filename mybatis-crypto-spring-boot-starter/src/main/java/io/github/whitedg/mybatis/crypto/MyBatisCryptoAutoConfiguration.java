@@ -41,4 +41,10 @@ public class MyBatisCryptoAutoConfiguration {
         return new MybatisDecryptionPlugin(properties.toMybatisCryptoConfig());
     }
 
+    @Bean
+    @ConditionalOnProperty(prefix = "mybatis-crypto", name = "encrypted-query", havingValue = "true")
+    @ConditionalOnMissingBean(MybatisQueryEncryptionPlugin.class)
+    public MybatisQueryEncryptionPlugin queryEncryptionInterceptor(MybatisCryptoProperties properties) {
+        return new MybatisQueryEncryptionPlugin(properties.toMybatisCryptoConfig());
+    }
 }

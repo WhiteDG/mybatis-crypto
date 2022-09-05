@@ -16,7 +16,7 @@ class Util {
     }
 
     public static boolean encryptionRequired(Object parameter, SqlCommandType sqlCommandType) {
-        return (sqlCommandType == SqlCommandType.INSERT || sqlCommandType == SqlCommandType.UPDATE)
+        return (sqlCommandType == SqlCommandType.INSERT || sqlCommandType == SqlCommandType.UPDATE || sqlCommandType == SqlCommandType.SELECT)
                 && decryptionRequired(parameter);
     }
 
