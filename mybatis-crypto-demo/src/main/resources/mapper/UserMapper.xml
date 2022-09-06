@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="io.github.whitedg.demo.mapper.UserMapper">
-
     <insert id="insert" parameterType="io.github.whitedg.demo.entity.User"
             keyProperty="id" useGeneratedKeys="true" keyColumn="id">
         insert into t_user (name, email, password, id_card_no)
@@ -21,6 +20,28 @@
         select *
         from t_user
         where id = #{id}
+    </select>
+
+    <select id="selectList" resultType="io.github.whitedg.demo.entity.User">
+        select *
+        from t_user
+        <where>
+            <if test="et.id != null">
+                and id = #{et.id}
+            </if>
+            <if test="et.name != null and et.name != ''">
+                and name = #{et.name}
+            </if>
+            <if test="et.email != null and et.email != ''">
+                and email = #{et.email}
+            </if>
+            <if test="et.idCardNo != null and et.idCardNo != ''">
+                and id_card_no = #{et.idCardNo}
+            </if>
+            <if test="et.password != null and et.password != ''">
+                and password = #{et.password}
+            </if>
+        </where>
     </select>
 
     <select id="selectAll" resultType="io.github.whitedg.demo.entity.User">

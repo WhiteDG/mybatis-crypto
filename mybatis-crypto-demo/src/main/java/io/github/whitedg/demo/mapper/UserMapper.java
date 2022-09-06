@@ -18,6 +18,8 @@ public interface UserMapper {
 
     User selectById(@Param("id") Long id);
 
+    List<User> selectList(@Param("et") User user);
+
     List<User> selectAll();
 
     @MapKey("id")

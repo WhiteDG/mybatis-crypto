@@ -11,6 +11,7 @@
     <groupId>io.github.whitedg</groupId>
     <artifactId>mybatis-crypto-demo</artifactId>
     <name>Mybatis Crypto Demo</name>
+    <version>1.0.0</version>
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -43,12 +44,12 @@
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-spring-boot-starter</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-encryptors</artifactId>
-            <version>1.1.0</version>
+            <version>1.2.0-SNAPSHOT</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
         <dependency>
@@ -59,7 +60,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.9</version>
+            <version>1.6.11</version>
         </dependency>
 
     </dependencies>
@@ -81,4 +82,17 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>mvn-snapshot</id>
+            <name>mvn-snapshot</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

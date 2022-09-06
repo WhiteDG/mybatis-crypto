@@ -5,11 +5,13 @@ import io.github.whitedg.mybatis.crypto.Base64Encryptor;
 import io.github.whitedg.mybatis.crypto.EncryptedField;
 import io.github.whitedg.mybatis.crypto.StrongTextEncryptor;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 /**
  * @author White
  */
 @Data
+@Accessors(chain = true)
 public class User {
 
     private Long id;

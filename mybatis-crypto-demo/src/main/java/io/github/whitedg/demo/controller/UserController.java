@@ -43,8 +43,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getList() {
-        return userMapper.selectAll();
+    public List<User> getList(User user) {
+        return userMapper.selectList(user);
     }
 
     @GetMapping("map/{id}")
