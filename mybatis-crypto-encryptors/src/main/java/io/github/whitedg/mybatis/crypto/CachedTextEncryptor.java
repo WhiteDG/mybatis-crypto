@@ -13,19 +13,19 @@ public abstract class CachedTextEncryptor implements IEncryptor {
     private final Map<String, TextEncryptor> cache = new ConcurrentHashMap<>();
 
     @Override
-    public String encrypt(Object val2bEncrypted, String key) throws Exception {
-        if (val2bEncrypted == null) {
+    public String encrypt(Object plain, String key) throws Exception {
+        if (plain == null) {
             return null;
         }
-        return get(key).encrypt(val2bEncrypted.toString());
+        return get(key).encrypt(plain.toString());
     }
 
     @Override
-    public String decrypt(Object val2bDecrypted, String key) throws Exception {
-        if (val2bDecrypted == null) {
+    public String decrypt(Object cipher, String key) throws Exception {
+        if (cipher == null) {
             return null;
         }
-        return get(key).decrypt(val2bDecrypted.toString());
+        return get(key).decrypt(cipher.toString());
     }
 
     protected TextEncryptor get(String key) {

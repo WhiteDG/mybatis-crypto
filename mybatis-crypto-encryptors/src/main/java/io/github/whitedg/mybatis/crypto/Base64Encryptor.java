@@ -9,13 +9,13 @@ import java.util.Base64;
 public class Base64Encryptor implements IEncryptor {
 
     @Override
-    public String encrypt(Object val2bEncrypted, String key) throws Exception {
-        return Base64.getEncoder().encodeToString(val2bEncrypted.toString().getBytes(StandardCharsets.UTF_8));
+    public String encrypt(Object plain, String key) throws Exception {
+        return Base64.getEncoder().encodeToString(plain.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     @Override
-    public String decrypt(Object val2bDecrypted, String key) throws Exception {
-        byte[] bytes = Base64.getDecoder().decode(val2bDecrypted.toString());
+    public String decrypt(Object cipher, String key) throws Exception {
+        byte[] bytes = Base64.getDecoder().decode(cipher.toString());
         return new String(bytes, StandardCharsets.UTF_8);
     }
 }

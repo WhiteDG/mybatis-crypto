@@ -61,9 +61,7 @@ public class AbsEncryptionPlugin implements Interceptor {
                 }
                 return result;
             } finally {
-                if (kryo != null) {
-                    KryoPool.free(kryo);
-                }
+                KryoPool.free(kryo);
             }
         } else {
             return invocation.proceed();
