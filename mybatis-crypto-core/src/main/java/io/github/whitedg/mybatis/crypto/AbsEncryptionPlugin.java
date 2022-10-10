@@ -56,15 +56,47 @@ public class AbsEncryptionPlugin implements Interceptor {
                 }
                 args[1] = execParam;
                 Object result = invocation.proceed();
-                if (!isParamMap) {
-                    handleKeyProperties(ms, parameter, execParam);
-                }
+                postExecution(ms, parameter, execParam, isParamMap);
                 return result;
             } finally {
                 KryoPool.free(kryo);
             }
         } else {
             return invocation.proceed();
+        }
+    }
+
+    private void postExecution(MappedStatement ms, Object parameter, Object execParam, boolean isParamMap) throws IllegalAccessException {
+        if (!keepParameter) {
+            return;
+        }
+        if (!isParamMap) {
+            handleKeyProperties(ms, parameter, execParam);
+        } else {
+            //noinspection unchecked
+            MapperMethod.ParamMap<Object> plainParamMap = (MapperMethod.ParamMap<Object>) parameter;
+            //noinspection unchecked
+            MapperMethod.ParamMap<Object> cipherParamMap = (MapperMethod.ParamMap<Object>) execParam;
+            for (Map.Entry<String, Object> plainEntry : plainParamMap.entrySet()) {
+                String key = plainEntry.getKey();
+                for (String keyPrefix : mappedKeyPrefixes) {
+                    if (key != null && key.startsWith(keyPrefix)) {
+                        Object plainVal = plainEntry.getValue();
+                        Object cipherVal = cipherParamMap.get(key);
+                        if (plainVal instanceof ArrayList) {
+                            //noinspection rawtypes
+                            ArrayList plainList = (ArrayList) plainVal;
+                            //noinspection rawtypes
+                            ArrayList cipherList = (ArrayList) cipherVal;
+                            for (int i = 0; i < plainList.size(); i++) {
+                                handleKeyProperties(ms, plainList.get(i), cipherList.get(i));
+                            }
+                        } else {
+                            handleKeyProperties(ms, plainVal, cipherVal);
+                        }
+                    }
+                }
+            }
         }
     }
 

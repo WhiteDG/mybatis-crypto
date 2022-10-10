@@ -23,7 +23,7 @@ mybatis-crypto:
   default-key: DEFAULT-KEY
   mapped-key-prefixes: et, encrypted
   type-packages: io.github.whitedg.**.entity
-  keep-parameter: false
+  keep-parameter: true
 
 mybatis:
   mapper-locations: classpath:mapper/*.xml
