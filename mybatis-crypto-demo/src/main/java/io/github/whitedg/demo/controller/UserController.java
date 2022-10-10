@@ -27,6 +27,12 @@ public class UserController {
         return user;
     }
 
+    @PostMapping("/batchCreate")
+    public List<User> batchCreate(@RequestBody List<User> users) {
+        int inserted = userMapper.batchInsert(users);
+        return users;
+    }
+
     @PutMapping("{id}")
     public User update(@PathVariable("id") Long id, @RequestBody User user) {
         user.setId(id);

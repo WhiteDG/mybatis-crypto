@@ -14,6 +14,8 @@ public interface UserMapper {
 
     int insert(User user);
 
+    int batchInsert(@Param("encryptedUsers") List<User> users);
+
     int updateById(@Param("et") User user);
 
     User selectById(@Param("id") Long id);
