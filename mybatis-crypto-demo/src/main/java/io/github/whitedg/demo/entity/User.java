@@ -5,16 +5,16 @@ import io.github.whitedg.mybatis.crypto.Base64Encryptor;
 import io.github.whitedg.mybatis.crypto.EncryptedField;
 import io.github.whitedg.mybatis.crypto.StrongTextEncryptor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
  * @author White
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
-public class User {
-
-    private Long id;
+public class User extends BaseEntity {
 
     @EncryptedField(encryptor = MyEncryptor.class)
     private String name;
