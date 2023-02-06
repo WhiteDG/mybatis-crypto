@@ -2,7 +2,8 @@
 
 <a href="https://github.com/WhiteDG/mybatis-crypto/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/WhiteDG/mybatis-crypto.svg?style=flat-square&label=latest version"/></a>
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/WhiteDG/mybatis-crypto?style=flat-square">
-<a href="https://github.com/WhiteDG/mybatis-crypto/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/WhiteDG/mybatis-crypto/Release?style=flat-square"/></a>
+<a href="https://github.com/WhiteDG/mybatis-crypto/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/WhiteDG/mybatis-crypto/release.yml?style=flat-square"></a>
+
 
 ## 简介
 
