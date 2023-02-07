@@ -84,6 +84,12 @@ mybatis-crypto:
   default-key: global-key
   # mybatis @Param 注解下需要加解密的参数 key 前缀
   mapped-key-prefixes: et,encrypted
+  # 是否启用加密字段全匹配查询，默认 false
+  encrypted-query: true
+  # 实体包路径
+  type-packages: io.github.whitedg.**.entity
+  # 是否保留明文参数
+  keep-parameter: true
 ```
 
 4. 指定加密字段
@@ -122,13 +128,15 @@ interface YourEntityMapper {
 
 ## 配置项说明
 
-|  配置项   | 说明  | 默认值 |
-|  ----  | ----  | ---- |
-| mybatis-crypto.enabled  | 是否启用 mybatis-crypto | true |
-| mybatis-crypto.fail-fast | 快速失败，加解密过程中发生异常是否中断。true:抛出异常，false:使用原始值，打印 warn 级别日志 | true |
-| mybatis-crypto.mapped-key-prefixes  | @Param 参数名的前缀，前缀匹配则会进行加密处理 | 空 |
-| mybatis-crypto.default-encryptor  | 全局默认 Encryptor | 空 |
-| mybatis-crypto.default-key  | 全局默认 Encryptor 的密钥 | 空 |
+| 配置项                                | 说明                                                     | 默认值   |
+|------------------------------------|--------------------------------------------------------|-------|
+| mybatis-crypto.enabled             | 是否启用 mybatis-crypto                                    | true  |
+| mybatis-crypto.fail-fast           | 快速失败，加解密过程中发生异常是否中断。true:抛出异常，false:使用原始值，打印 warn 级别日志 | true  |
+| mybatis-crypto.mapped-key-prefixes | @Param 参数名的前缀，前缀匹配则会进行加密处理                             | 空     |
+| mybatis-crypto.default-encryptor   | 全局默认 Encryptor                                         | 空     |
+| mybatis-crypto.encrypted-query     | 是否启用加密字段全匹配查询                                          | false |
+| mybatis-crypto.type-packages       | 实体的包路径，可选配置，配置后会在服务启动时提前将 Encryptor 加载到缓存中             | 空     |
+| mybatis-crypto.keep-parameter      | 是否保留实体的明文参数，insert/update语句执行后实体的加密字段可以选择保留明文或者用密文覆盖   | false |
 
 ## LICENSE
 
