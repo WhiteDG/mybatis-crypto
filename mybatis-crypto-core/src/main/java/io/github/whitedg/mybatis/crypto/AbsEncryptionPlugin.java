@@ -39,28 +39,18 @@ public class AbsEncryptionPlugin implements Interceptor {
         MappedStatement ms = (MappedStatement) args[0];
         Object parameter = args[1];
         if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
-            Kryo kryo = null;
-            try {
-                Object execParam = parameter;
-                if (keepParameter) {
-                    kryo = KryoPool.obtain();
-                    execParam = kryo.copy(parameter);
-                }
-                boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
-                if (isParamMap) {
-                    //noinspection unchecked
-                    MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) execParam;
-                    encryptParamMap(paramMap);
-                } else {
-                    encryptEntity(execParam);
-                }
+            boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
+            if (isParamMap) {
+                //noinspection unchecked
+                MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
+                encryptParamMap(paramMap);
+            } else {
+                Object execParam = encryptEntity(parameter);
                 args[1] = execParam;
-                Object result = invocation.proceed();
-                postExecution(ms, parameter, execParam, isParamMap);
-                return result;
-            } finally {
-                KryoPool.free(kryo);
             }
+            Object result = invocation.proceed();
+            postExecution(ms, parameter, args[1], isParamMap);
+            return result;
         } else {
             return invocation.proceed();
         }
@@ -107,8 +97,23 @@ public class AbsEncryptionPlugin implements Interceptor {
         }
     }
 
-    private void encryptEntity(Object parameter) throws MybatisCryptoException {
-        processFields(EncryptedFieldsProvider.get(parameter.getClass()), parameter);
+    private <T> T encryptEntity(T parameter) throws MybatisCryptoException {
+        Set<Field> encryptedFields = EncryptedFieldsProvider.get(parameter.getClass());
+        if (encryptedFields == null || encryptedFields.isEmpty()) {
+            return parameter;
+        }
+        T execParam = parameter;
+        Kryo kryo = null;
+        try {
+            if (keepParameter) {
+                kryo = KryoPool.obtain();
+                execParam = kryo.copy(parameter);
+            }
+            processFields(encryptedFields, execParam);
+            return execParam;
+        } finally {
+            KryoPool.free(kryo);
+        }
     }
 
     private void encryptParamMap(MapperMethod.ParamMap<Object> paramMap) throws MybatisCryptoException {
