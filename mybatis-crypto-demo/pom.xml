@@ -44,7 +44,7 @@
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-spring-boot-starter</artifactId>
-            <version>1.2.0-SNAPSHOT</version>
+            <version>1.2.2</version>
         </dependency>
         <dependency>
             <groupId>io.github.whitedg</groupId>
@@ -61,6 +61,10 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>1.6.11</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
     </dependencies>

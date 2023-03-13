@@ -1,6 +1,5 @@
 package io.github.whitedg.mybatis.crypto;
 
-import com.esotericsoftware.kryo.kryo5.Kryo;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
@@ -39,88 +38,49 @@ public class AbsEncryptionPlugin implements Interceptor {
         MappedStatement ms = (MappedStatement) args[0];
         Object parameter = args[1];
         if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
-            boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
-            if (isParamMap) {
-                //noinspection unchecked
-                MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
-                encryptParamMap(paramMap);
-            } else {
-                Object execParam = encryptEntity(parameter);
-                args[1] = execParam;
-            }
+            doEncrypt(parameter);
             Object result = invocation.proceed();
-            postExecution(ms, parameter, args[1], isParamMap);
+            if (keepParameter) {
+                doDecrypt(parameter);
+            }
             return result;
         } else {
             return invocation.proceed();
         }
     }
 
-    private void postExecution(MappedStatement ms, Object parameter, Object execParam, boolean isParamMap) throws IllegalAccessException {
-        if (!keepParameter) {
-            return;
-        }
-        if (!isParamMap) {
-            handleKeyProperties(ms, parameter, execParam);
+    private void doEncrypt(Object parameter) {
+        handleParameter(Mode.ENCRYPT, parameter);
+    }
+
+    private void doDecrypt(Object parameter) {
+        handleParameter(Mode.DECRYPT, parameter);
+    }
+
+    private void handleParameter(Mode mode, Object parameter) {
+        boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
+        if (isParamMap) {
+            //noinspection unchecked
+            MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
+            encryptParamMap(mode, paramMap);
         } else {
-            //noinspection unchecked
-            MapperMethod.ParamMap<Object> plainParamMap = (MapperMethod.ParamMap<Object>) parameter;
-            //noinspection unchecked
-            MapperMethod.ParamMap<Object> cipherParamMap = (MapperMethod.ParamMap<Object>) execParam;
-            for (Map.Entry<String, Object> plainEntry : plainParamMap.entrySet()) {
-                String key = plainEntry.getKey();
-                for (String keyPrefix : mappedKeyPrefixes) {
-                    if (key != null && key.startsWith(keyPrefix)) {
-                        Object plainVal = plainEntry.getValue();
-                        Object cipherVal = cipherParamMap.get(key);
-                        if (plainVal instanceof ArrayList) {
-                            //noinspection rawtypes
-                            ArrayList plainList = (ArrayList) plainVal;
-                            //noinspection rawtypes
-                            ArrayList cipherList = (ArrayList) cipherVal;
-                            for (int i = 0; i < plainList.size(); i++) {
-                                handleKeyProperties(ms, plainList.get(i), cipherList.get(i));
-                            }
-                        } else {
-                            handleKeyProperties(ms, plainVal, cipherVal);
-                        }
-                    }
-                }
-            }
+            encryptEntity(mode, parameter);
         }
     }
 
-    private void handleKeyProperties(MappedStatement ms, Object parameter, Object copyOfParameter) throws IllegalAccessException {
-        List<Field> keyFields = KeyFieldsProvider.get(ms, copyOfParameter);
-        for (Field keyField : keyFields) {
-            keyField.set(parameter, keyField.get(copyOfParameter));
-        }
-    }
-
-    private <T> T encryptEntity(T parameter) throws MybatisCryptoException {
+    private <T> void encryptEntity(Mode mode, T parameter) throws MybatisCryptoException {
         Set<Field> encryptedFields = EncryptedFieldsProvider.get(parameter.getClass());
         if (encryptedFields == null || encryptedFields.isEmpty()) {
-            return parameter;
+            return;
         }
-        T execParam = parameter;
-        Kryo kryo = null;
-        try {
-            if (keepParameter) {
-                kryo = KryoPool.obtain();
-                execParam = kryo.copy(parameter);
-            }
-            processFields(encryptedFields, execParam);
-            return execParam;
-        } finally {
-            KryoPool.free(kryo);
-        }
+        processFields(mode, encryptedFields, parameter);
     }
 
-    private void encryptParamMap(MapperMethod.ParamMap<Object> paramMap) throws MybatisCryptoException {
-        Set<Map.Entry<String, Object>> entrySet = paramMap.entrySet();
-        for (Map.Entry<String, Object> entry : entrySet) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
+    private void encryptParamMap(Mode mode, MapperMethod.ParamMap<Object> paramMap) throws MybatisCryptoException {
+        Set<Map.Entry<String, Object>> paramMapEntrySet = paramMap.entrySet();
+        for (Map.Entry<String, Object> paramEntry : paramMapEntrySet) {
+            String key = paramEntry.getKey();
+            Object value = paramEntry.getValue();
             if (value == null || key == null) {
                 continue;
             }
@@ -134,18 +94,18 @@ public class AbsEncryptionPlugin implements Interceptor {
                             Class<?> itemClass = firstItem.getClass();
                             Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
                             for (Object item : list) {
-                                processFields(encryptedFields, item);
+                                processFields(mode, encryptedFields, item);
                             }
                         }
                     } else {
-                        processFields(EncryptedFieldsProvider.get(value.getClass()), value);
+                        processFields(mode, EncryptedFieldsProvider.get(value.getClass()), value);
                     }
                 }
             }
         }
     }
 
-    private void processFields(Set<Field> encryptedFields, Object entry) throws MybatisCryptoException {
+    private void processFields(Mode mode, Set<Field> encryptedFields, Object entry) throws MybatisCryptoException {
         if (encryptedFields == null || encryptedFields.isEmpty()) {
             return;
         }
@@ -164,8 +124,8 @@ public class AbsEncryptionPlugin implements Interceptor {
                 }
                 String key = Util.getKeyOrDefault(encryptedField, defaultKey);
                 IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
-                String encryptedVal = iEncryptor.encrypt(originalVal, key);
-                field.set(entry, encryptedVal);
+                String updatedVal = Mode.ENCRYPT.equals(mode) ? iEncryptor.encrypt(originalVal, key) : iEncryptor.decrypt(originalVal, key);
+                field.set(entry, updatedVal);
             } catch (Exception e) {
                 if (failFast) {
                     throw new MybatisCryptoException(e);

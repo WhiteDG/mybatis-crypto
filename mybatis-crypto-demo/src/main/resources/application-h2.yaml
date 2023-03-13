@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:demo_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: sa
+  h2:
+    console:
+      enabled: true
+  sql:
+    init:
+      schema-locations: classpath:db/h2/schema.sql

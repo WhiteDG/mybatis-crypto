@@ -3,17 +3,8 @@ server:
   port: 7070
 
 spring:
-  datasource:
-    url: jdbc:h2:mem:demo_db
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: sa
-  h2:
-    console:
-      enabled: true
-  sql:
-    init:
-      schema-locations: classpath:db/schema.sql
+  profiles:
+    active: h2
 
 mybatis-crypto:
   enabled: true

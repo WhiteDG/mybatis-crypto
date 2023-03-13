@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    username: root
+    password: ne2FRwzOQjONzEOmx0oZ4uh9
+    hikari:
+      jdbc-url: jdbc:mysql://localhost:3306/mybatis_crypto
+      driver-class-name: com.mysql.cj.jdbc.Driver
+
