@@ -117,6 +117,12 @@ interface YourEntityMapper {
     // 支持数组
     int batchInsert(@Param("encrypted-entities") List<YourEntity> entity);
 
+    // 字符串参数支持使用 @EncryptedField
+    int selectByName0(@EncryptedField(encryptor = YourEncryptor.class, key = "Your Key") String name);
+
+    // 字符串参数支持 @Param 前缀匹配(使用全局的 Encryptor 和 key)
+    int selectByName1(@Param("encrypted-name") String name);
+
     // 返回值也支持单个对象或数组
     YourEntity selectOne();
 
