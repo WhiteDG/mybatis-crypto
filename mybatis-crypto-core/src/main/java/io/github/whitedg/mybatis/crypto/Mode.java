@@ -3,6 +3,6 @@ package io.github.whitedg.mybatis.crypto;
 /**
  * @author White
  */
-enum Mode {
+public enum Mode {
     ENCRYPT, DECRYPT
 }

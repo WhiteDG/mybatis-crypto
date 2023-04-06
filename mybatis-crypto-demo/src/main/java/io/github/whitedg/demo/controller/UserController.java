@@ -57,4 +57,9 @@ public class UserController {
     public Map<Long, ?> getMap(@PathVariable("id") Long id) {
         return userMapper.selectMap(id);
     }
+
+    @GetMapping("name/{name}")
+    public List<User> getByName(@PathVariable("name") String name) {
+        return userMapper.selectByName(name);
+    }
 }

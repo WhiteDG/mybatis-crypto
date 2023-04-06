@@ -62,4 +62,10 @@
             (#{item.name}, #{item.email}, #{item.password}, #{item.idCardNo})
         </foreach>
     </insert>
+
+    <select id="selectByName" resultType="io.github.whitedg.demo.entity.User">
+        select *
+        from t_user
+        where name = #{name}
+    </select>
 </mapper>

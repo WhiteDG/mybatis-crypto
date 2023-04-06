@@ -1,6 +1,5 @@
 package io.github.whitedg.mybatis.crypto;
 
-import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.plugin.Invocation;
@@ -25,7 +24,7 @@ public class AbsEncryptionPlugin implements Interceptor {
     private final boolean keepParameter;
 
     public AbsEncryptionPlugin(MybatisCryptoConfig myBatisCryptoConfig) {
-        this.mappedKeyPrefixes = myBatisCryptoConfig.getMappedKeyPrefixes();
+        this.mappedKeyPrefixes = Collections.unmodifiableList(myBatisCryptoConfig.getMappedKeyPrefixes());
         this.failFast = myBatisCryptoConfig.isFailFast();
         this.defaultKey = myBatisCryptoConfig.getDefaultKey();
         this.defaultEncryptor = myBatisCryptoConfig.getDefaultEncryptor();
@@ -38,10 +37,10 @@ public class AbsEncryptionPlugin implements Interceptor {
         MappedStatement ms = (MappedStatement) args[0];
         Object parameter = args[1];
         if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
-            doEncrypt(parameter);
+            doEncrypt(parameter, ms);
             Object result = invocation.proceed();
             if (keepParameter) {
-                doDecrypt(parameter);
+                doDecrypt(parameter, ms);
             }
             return result;
         } else {
@@ -49,26 +48,26 @@ public class AbsEncryptionPlugin implements Interceptor {
         }
     }
 
-    private void doEncrypt(Object parameter) {
-        handleParameter(Mode.ENCRYPT, parameter);
+    private void doEncrypt(Object parameter, MappedStatement ms) {
+        handleParameter(Mode.ENCRYPT, parameter, ms);
     }
 
-    private void doDecrypt(Object parameter) {
-        handleParameter(Mode.DECRYPT, parameter);
+    private void doDecrypt(Object parameter, MappedStatement ms) {
+        handleParameter(Mode.DECRYPT, parameter, ms);
     }
 
-    private void handleParameter(Mode mode, Object parameter) {
-        boolean isParamMap = parameter instanceof MapperMethod.ParamMap;
+    private void handleParameter(Mode mode, Object parameter, MappedStatement ms) {
+        boolean isParamMap = parameter instanceof HashMap;
         if (isParamMap) {
             //noinspection unchecked
-            MapperMethod.ParamMap<Object> paramMap = (MapperMethod.ParamMap<Object>) parameter;
-            encryptParamMap(mode, paramMap);
+            HashMap<String, Object> paramMap = (HashMap<String, Object>) parameter;
+            handleParamMap(mode, paramMap, ms);
         } else {
-            encryptEntity(mode, parameter);
+            handleEntity(mode, parameter);
         }
     }
 
-    private <T> void encryptEntity(Mode mode, T parameter) throws MybatisCryptoException {
+    private <T> void handleEntity(Mode mode, T parameter) throws MybatisCryptoException {
         Set<Field> encryptedFields = EncryptedFieldsProvider.get(parameter.getClass());
         if (encryptedFields == null || encryptedFields.isEmpty()) {
             return;
@@ -76,31 +75,72 @@ public class AbsEncryptionPlugin implements Interceptor {
         processFields(mode, encryptedFields, parameter);
     }
 
-    private void encryptParamMap(Mode mode, MapperMethod.ParamMap<Object> paramMap) throws MybatisCryptoException {
+    private void handleParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement ms) throws MybatisCryptoException {
+        Map<String, EncryptedParamConfig> encryptedParamConfigs = EncryptedParamsProvider.get(ms.getId(), mappedKeyPrefixes);
         Set<Map.Entry<String, Object>> paramMapEntrySet = paramMap.entrySet();
-        for (Map.Entry<String, Object> paramEntry : paramMapEntrySet) {
-            String key = paramEntry.getKey();
-            Object value = paramEntry.getValue();
-            if (value == null || key == null) {
+        for (Map.Entry<String, Object> paramMapEntry : paramMapEntrySet) {
+            String paramName = paramMapEntry.getKey();
+            Object paramValue = paramMapEntry.getValue();
+            if (paramValue == null || paramName == null) {
                 continue;
             }
-            for (String mappedKeyPrefix : mappedKeyPrefixes) {
-                if (key.startsWith(mappedKeyPrefix)) {
-                    if (value instanceof ArrayList) {
-                        //noinspection rawtypes
-                        ArrayList list = (ArrayList) value;
-                        if (!list.isEmpty()) {
-                            Object firstItem = list.get(0);
-                            Class<?> itemClass = firstItem.getClass();
-                            Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
-                            for (Object item : list) {
-                                processFields(mode, encryptedFields, item);
+            if (encryptedParamConfigs.containsKey(paramName)) {
+                EncryptedParamConfig encryptedParamConfig = encryptedParamConfigs.get(paramName);
+                if (paramValue instanceof Collection) {
+                    //noinspection rawtypes
+                    Collection list = (Collection) paramValue;
+                    if (!list.isEmpty()) {
+                        Object nonNullItem = null;
+                        for (Object o : list) {
+                            if (o != null) {
+                                nonNullItem = o;
+                                break;
                             }
                         }
+                        if (nonNullItem == null) {
+                            continue;
+                        }
+                        if (nonNullItem instanceof String) {
+                            //noinspection rawtypes
+                            Collection newList = new ArrayList();
+                            for (Object item : list) {
+                                newList.add(processString(mode, item, encryptedParamConfig));
+                            }
+                            // Replace plain text with ciphertext
+                            list.clear();
+                            list.addAll(newList);
+                        } else {
+                            Class<?> itemClass = nonNullItem.getClass();
+                            Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
+                            if (encryptedFields != null && !encryptedFields.isEmpty()) {
+                                for (Object item : list) {
+                                    processFields(mode, encryptedFields, item);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (paramValue instanceof String) {
+                        paramMapEntry.setValue(processString(mode, paramValue, encryptedParamConfig));
                     } else {
-                        processFields(mode, EncryptedFieldsProvider.get(value.getClass()), value);
+                        processFields(mode, EncryptedFieldsProvider.get(paramValue.getClass()), paramValue);
                     }
                 }
+            }
+        }
+    }
+
+    private Object processString(Mode mode, Object originalValue, EncryptedParamConfig encryptedParamConfig) {
+        IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedParamConfig.getEncryptor(), defaultEncryptor);
+        String key = encryptedParamConfig.getKey() == null || encryptedParamConfig.getKey().equals("") ? defaultKey : encryptedParamConfig.getKey();
+        try {
+            return Util.doFinal(iEncryptor, mode, originalValue, key);
+        } catch (Exception e) {
+            if (failFast) {
+                throw new MybatisCryptoException(e);
+            } else {
+                log.warn("process encrypted parameter error.", e);
+                return originalValue;
             }
         }
     }
@@ -124,7 +164,7 @@ public class AbsEncryptionPlugin implements Interceptor {
                 }
                 String key = Util.getKeyOrDefault(encryptedField, defaultKey);
                 IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
-                String updatedVal = Mode.ENCRYPT.equals(mode) ? iEncryptor.encrypt(originalVal, key) : iEncryptor.decrypt(originalVal, key);
+                String updatedVal = Util.doFinal(iEncryptor, mode, originalVal, key);
                 field.set(entry, updatedVal);
             } catch (Exception e) {
                 if (failFast) {
