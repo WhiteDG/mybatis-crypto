@@ -118,7 +118,8 @@ interface YourEntityMapper {
     int batchInsert(@Param("encrypted-entities") List<YourEntity> entity);
 
     // 字符串参数支持使用 @EncryptedField
-    int selectByName0(@EncryptedField(encryptor = YourEncryptor.class, key = "Your Key") String name);
+    // ⚠️只有一个参数的时候需要同时加上 @Param
+    int selectByName0(@EncryptedField(encryptor = YourEncryptor.class, key = "Your Key") @Param("name") String name);
 
     // 字符串参数支持 @Param 前缀匹配(使用全局的 Encryptor 和 key)
     int selectByName1(@Param("encrypted-name") String name);
