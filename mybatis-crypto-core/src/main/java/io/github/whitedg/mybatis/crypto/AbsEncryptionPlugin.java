@@ -77,54 +77,54 @@ public class AbsEncryptionPlugin implements Interceptor {
 
     private void handleParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement ms) throws MybatisCryptoException {
         Map<String, EncryptedParamConfig> encryptedParamConfigs = EncryptedParamsProvider.get(ms.getId(), mappedKeyPrefixes);
-        Set<Map.Entry<String, Object>> paramMapEntrySet = paramMap.entrySet();
-        for (Map.Entry<String, Object> paramMapEntry : paramMapEntrySet) {
-            String paramName = paramMapEntry.getKey();
-            Object paramValue = paramMapEntry.getValue();
-            if (paramValue == null || paramName == null) {
+        if (encryptedParamConfigs == null || encryptedParamConfigs.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, EncryptedParamConfig> entry : encryptedParamConfigs.entrySet()) {
+            String paramName = entry.getKey();
+            Object paramValue = paramMap.get(paramName);
+            if (paramValue == null) {
                 continue;
             }
-            if (encryptedParamConfigs.containsKey(paramName)) {
-                EncryptedParamConfig encryptedParamConfig = encryptedParamConfigs.get(paramName);
-                if (paramValue instanceof Collection) {
-                    //noinspection rawtypes
-                    Collection list = (Collection) paramValue;
-                    if (!list.isEmpty()) {
-                        Object nonNullItem = null;
-                        for (Object o : list) {
-                            if (o != null) {
-                                nonNullItem = o;
-                                break;
-                            }
-                        }
-                        if (nonNullItem == null) {
-                            continue;
-                        }
-                        if (nonNullItem instanceof String) {
-                            //noinspection rawtypes
-                            Collection newList = new ArrayList();
-                            for (Object item : list) {
-                                newList.add(processString(mode, item, encryptedParamConfig));
-                            }
-                            // Replace plain text with ciphertext
-                            list.clear();
-                            list.addAll(newList);
-                        } else {
-                            Class<?> itemClass = nonNullItem.getClass();
-                            Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
-                            if (encryptedFields != null && !encryptedFields.isEmpty()) {
-                                for (Object item : list) {
-                                    processFields(mode, encryptedFields, item);
-                                }
-                            }
+            EncryptedParamConfig encryptedParamConfig = entry.getValue();
+            if (paramValue instanceof Collection) {
+                //noinspection rawtypes
+                Collection list = (Collection) paramValue;
+                if (!list.isEmpty()) {
+                    Object nonNullItem = null;
+                    for (Object o : list) {
+                        if (o != null) {
+                            nonNullItem = o;
+                            break;
                         }
                     }
-                } else {
-                    if (paramValue instanceof String) {
-                        paramMapEntry.setValue(processString(mode, paramValue, encryptedParamConfig));
+                    if (nonNullItem == null) {
+                        continue;
+                    }
+                    if (nonNullItem instanceof String) {
+                        //noinspection rawtypes
+                        Collection newList = new ArrayList();
+                        for (Object item : list) {
+                            newList.add(processString(mode, item, encryptedParamConfig));
+                        }
+                        // Replace plain text with ciphertext
+                        list.clear();
+                        list.addAll(newList);
                     } else {
-                        processFields(mode, EncryptedFieldsProvider.get(paramValue.getClass()), paramValue);
+                        Class<?> itemClass = nonNullItem.getClass();
+                        Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
+                        if (encryptedFields != null && !encryptedFields.isEmpty()) {
+                            for (Object item : list) {
+                                processFields(mode, encryptedFields, item);
+                            }
+                        }
                     }
+                }
+            } else {
+                if (paramValue instanceof String) {
+                    paramMap.put(paramName, processString(mode, paramValue, encryptedParamConfig));
+                } else {
+                    processFields(mode, EncryptedFieldsProvider.get(paramValue.getClass()), paramValue);
                 }
             }
         }
