@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author White
@@ -48,20 +50,20 @@ public class AbsEncryptionPlugin implements Interceptor {
         }
     }
 
-    private void doEncrypt(Object parameter, MappedStatement ms) {
-        handleParameter(Mode.ENCRYPT, parameter, ms);
+    private void doEncrypt(Object parameter, MappedStatement mappedStatement) {
+        handleParameter(Mode.ENCRYPT, parameter, mappedStatement);
     }
 
-    private void doDecrypt(Object parameter, MappedStatement ms) {
-        handleParameter(Mode.DECRYPT, parameter, ms);
+    private void doDecrypt(Object parameter, MappedStatement mappedStatement) {
+        handleParameter(Mode.DECRYPT, parameter, mappedStatement);
     }
 
-    private void handleParameter(Mode mode, Object parameter, MappedStatement ms) {
+    private void handleParameter(Mode mode, Object parameter, MappedStatement mappedStatement) {
         boolean isParamMap = parameter instanceof HashMap;
         if (isParamMap) {
             //noinspection unchecked
             HashMap<String, Object> paramMap = (HashMap<String, Object>) parameter;
-            handleParamMap(mode, paramMap, ms);
+            handleParamMap(mode, paramMap, mappedStatement);
         } else {
             handleEntity(mode, parameter);
         }
@@ -75,8 +77,8 @@ public class AbsEncryptionPlugin implements Interceptor {
         processFields(mode, encryptedFields, parameter);
     }
 
-    private void handleParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement ms) throws MybatisCryptoException {
-        Map<String, EncryptedParamConfig> encryptedParamConfigs = EncryptedParamsProvider.get(ms.getId(), mappedKeyPrefixes);
+    private void handleParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement mappedStatement) throws MybatisCryptoException {
+        Map<String, EncryptedParamConfig> encryptedParamConfigs = EncryptedParamsProvider.get(mappedStatement.getId(), mappedKeyPrefixes);
         if (encryptedParamConfigs == null || encryptedParamConfigs.isEmpty()) {
             return;
         }
@@ -90,42 +92,35 @@ public class AbsEncryptionPlugin implements Interceptor {
             if (paramValue instanceof Collection) {
                 //noinspection rawtypes
                 Collection list = (Collection) paramValue;
-                if (!list.isEmpty()) {
-                    Object nonNullItem = null;
-                    for (Object o : list) {
-                        if (o != null) {
-                            nonNullItem = o;
-                            break;
-                        }
-                    }
-                    if (nonNullItem == null) {
-                        continue;
-                    }
-                    if (nonNullItem instanceof String) {
-                        //noinspection rawtypes
-                        Collection newList = new ArrayList();
-                        for (Object item : list) {
-                            newList.add(processString(mode, item, encryptedParamConfig));
-                        }
-                        // Replace plain text with ciphertext
-                        list.clear();
-                        list.addAll(newList);
-                    } else {
-                        Class<?> itemClass = nonNullItem.getClass();
-                        Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
-                        if (encryptedFields != null && !encryptedFields.isEmpty()) {
-                            for (Object item : list) {
-                                processFields(mode, encryptedFields, item);
-                            }
-                        }
-                    }
+                if (list.isEmpty()) {
+                    continue;
                 }
-            } else {
-                if (paramValue instanceof String) {
-                    paramMap.put(paramName, processString(mode, paramValue, encryptedParamConfig));
+                Object nonNullItem = list.stream().filter(Objects::nonNull).findFirst().orElse(null);
+                if (nonNullItem == null) {
+                    continue;
+                }
+                if (nonNullItem instanceof String) {
+                    //noinspection rawtypes
+                    Collection newList = new ArrayList();
+                    for (Object item : list) {
+                        newList.add(processString(mode, item, encryptedParamConfig));
+                    }
+                    // Replace plain text with ciphertext
+                    list.clear();
+                    list.addAll(newList);
                 } else {
-                    processFields(mode, EncryptedFieldsProvider.get(paramValue.getClass()), paramValue);
+                    Class<?> itemClass = nonNullItem.getClass();
+                    Set<Field> encryptedFields = EncryptedFieldsProvider.get(itemClass);
+                    if (encryptedFields != null && !encryptedFields.isEmpty()) {
+                        for (Object item : list) {
+                            processFields(mode, encryptedFields, item);
+                        }
+                    }
                 }
+            } else if (paramValue instanceof String) {
+                paramMap.put(paramName, processString(mode, paramValue, encryptedParamConfig));
+            } else {
+                processFields(mode, EncryptedFieldsProvider.get(paramValue.getClass()), paramValue);
             }
         }
     }
