@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * @author White
@@ -51,25 +49,25 @@ public class AbsEncryptionPlugin implements Interceptor {
     }
 
     private void doEncrypt(Object parameter, MappedStatement mappedStatement) {
-        handleParameter(Mode.ENCRYPT, parameter, mappedStatement);
+        processParameter(Mode.ENCRYPT, parameter, mappedStatement);
     }
 
     private void doDecrypt(Object parameter, MappedStatement mappedStatement) {
-        handleParameter(Mode.DECRYPT, parameter, mappedStatement);
+        processParameter(Mode.DECRYPT, parameter, mappedStatement);
     }
 
-    private void handleParameter(Mode mode, Object parameter, MappedStatement mappedStatement) {
+    private void processParameter(Mode mode, Object parameter, MappedStatement mappedStatement) {
         boolean isParamMap = parameter instanceof HashMap;
         if (isParamMap) {
             //noinspection unchecked
             HashMap<String, Object> paramMap = (HashMap<String, Object>) parameter;
-            handleParamMap(mode, paramMap, mappedStatement);
+            processParamMap(mode, paramMap, mappedStatement);
         } else {
-            handleEntity(mode, parameter);
+            processEntity(mode, parameter);
         }
     }
 
-    private <T> void handleEntity(Mode mode, T parameter) throws MybatisCryptoException {
+    private <T> void processEntity(Mode mode, T parameter) throws MybatisCryptoException {
         Set<Field> encryptedFields = EncryptedFieldsProvider.get(parameter.getClass());
         if (encryptedFields == null || encryptedFields.isEmpty()) {
             return;
@@ -77,7 +75,7 @@ public class AbsEncryptionPlugin implements Interceptor {
         processFields(mode, encryptedFields, parameter);
     }
 
-    private void handleParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement mappedStatement) throws MybatisCryptoException {
+    private void processParamMap(Mode mode, HashMap<String, Object> paramMap, MappedStatement mappedStatement) throws MybatisCryptoException {
         Map<String, EncryptedParamConfig> encryptedParamConfigs = EncryptedParamsProvider.get(mappedStatement.getId(), mappedKeyPrefixes);
         if (encryptedParamConfigs == null || encryptedParamConfigs.isEmpty()) {
             return;
