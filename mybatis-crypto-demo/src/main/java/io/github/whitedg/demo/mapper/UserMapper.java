@@ -1,12 +1,13 @@
 package io.github.whitedg.demo.mapper;
 
 import io.github.whitedg.demo.encryptor.MyEncryptor;
+import io.github.whitedg.demo.entity.IdCard;
 import io.github.whitedg.demo.entity.User;
+import io.github.whitedg.demo.entity.UserWithAssociation;
 import io.github.whitedg.mybatis.crypto.EncryptedField;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -31,4 +32,8 @@ public interface UserMapper {
     Map<Long, User> selectMap(@Param("id") Long id);
 
     List<User> selectByName(@EncryptedField(encryptor = MyEncryptor.class) @Param("name") String name);
+
+    IdCard selectIdCardByUserId(@Param("id") Long id);
+
+    UserWithAssociation selectByIdWithAssociation(@Param("id") Long id);
 }

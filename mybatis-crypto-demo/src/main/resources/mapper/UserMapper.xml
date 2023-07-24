@@ -3,8 +3,8 @@
 <mapper namespace="io.github.whitedg.demo.mapper.UserMapper">
     <insert id="insert" parameterType="io.github.whitedg.demo.entity.User"
             keyProperty="id" useGeneratedKeys="true" keyColumn="id">
-        insert into t_user (name, email, password, id_card_no)
-        values (#{name}, #{email}, #{password}, #{idCardNo})
+        insert into t_user (name, email, password, id_card_no, created_time)
+        values (#{name}, #{email}, #{password}, #{idCardNo}, now())
     </insert>
 
     <update id="updateById">
@@ -67,5 +67,41 @@
         select *
         from t_user
         where name = #{name}
+    </select>
+
+    <resultMap id="cardMap" type="io.github.whitedg.demo.entity.IdCard">
+        <result property="cardNo" column="id_card_no"/>
+    </resultMap>
+
+    <resultMap id="addressMap" type="io.github.whitedg.demo.entity.Address" >
+        <result property="id" column="address_id" />
+        <result property="userId" column="user_id"  />
+        <result property="address" column="address"  />
+    </resultMap>
+
+    <resultMap id="userMap" type="io.github.whitedg.demo.entity.UserWithAssociation">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="name" column="name"/>
+        <result property="password" column="password"/>
+        <result property="createdTime" column="created_time"/>
+        <association property="idCardSelect" column="id"
+                     select="selectIdCardByUserId"/>
+        <association property="idCardResultMap" resultMap="cardMap"/>
+        <collection property="addresses" resultMap="addressMap"/>
+    </resultMap>
+
+    <select id="selectByIdWithAssociation" resultMap="userMap">
+        select a.*, b.id as address_id, b.user_id as user_id, b.address as address
+        from t_user as a
+        left join t_address as b
+        on a.id = b.user_id
+        where a.id = #{id}
+    </select>
+
+    <select id="selectIdCardByUserId" resultType="io.github.whitedg.demo.entity.IdCard">
+        select id_card_no as cardNo
+        from t_user
+        where id = #{id}
     </select>
 </mapper>
