@@ -2,6 +2,7 @@ package io.github.whitedg.mybatis.crypto;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,10 @@ class EncryptedFieldsProvider {
 
     public static Set<Field> get(Class<?> parameterClass) {
         return encryptedFieldCache.computeIfAbsent(parameterClass, aClass -> {
-            Field[] declaredFields = aClass.getDeclaredFields();
+            Field[] declaredFields = ReflectUtil.getFields(aClass);
+            if (declaredFields == null) {
+                return Collections.emptySet();
+            }
             Set<Field> fieldSet = Arrays.stream(declaredFields).filter(field ->
                             field.isAnnotationPresent(EncryptedField.class) && field.getType() == String.class)
                     .collect(Collectors.toSet());
