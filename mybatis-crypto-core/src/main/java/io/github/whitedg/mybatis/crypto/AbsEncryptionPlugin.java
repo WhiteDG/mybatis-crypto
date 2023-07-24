@@ -88,8 +88,7 @@ public class AbsEncryptionPlugin implements Interceptor {
             }
             EncryptedParamConfig encryptedParamConfig = entry.getValue();
             if (paramValue instanceof Collection) {
-                //noinspection rawtypes
-                Collection list = (Collection) paramValue;
+                Collection<?> list = (Collection<?>) paramValue;
                 if (list.isEmpty()) {
                     continue;
                 }
@@ -148,11 +147,14 @@ public class AbsEncryptionPlugin implements Interceptor {
                 if (encryptedField == null) {
                     continue;
                 }
+                if (!String.class.equals(field.getType())) {
+                    continue;
+                }
                 Object originalVal = field.get(entry);
                 if (originalVal == null) {
                     continue;
                 }
-                if (originalVal instanceof String && ((String) originalVal).isEmpty()) {
+                if (((String) originalVal).isEmpty()) {
                     continue;
                 }
                 String key = Util.getKeyOrDefault(encryptedField, defaultKey);

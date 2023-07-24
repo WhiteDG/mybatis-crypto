@@ -7,7 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -34,59 +35,67 @@ public class MybatisDecryptionPlugin implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {
         Object result = invocation.proceed();
-        if (result == null) {
-            return null;
-        }
-        if (result instanceof ArrayList) {
-            //noinspection rawtypes
-            ArrayList resultList = (ArrayList) result;
-            if (resultList.isEmpty()) {
-                return result;
-            }
-            Object firstItem = resultList.get(0);
-            boolean needToDecrypt = Util.decryptionRequired(firstItem);
-            if (!needToDecrypt) {
-                return result;
-            }
-            Set<Field> encryptedFields = EncryptedFieldsProvider.get(firstItem.getClass());
-            if (encryptedFields == null || encryptedFields.isEmpty()) {
-                return result;
-            }
-            for (Object item : resultList) {
-                decryptEntity(encryptedFields, item);
-            }
-        } else {
-            if (Util.decryptionRequired(result)) {
-                decryptEntity(EncryptedFieldsProvider.get(result.getClass()), result);
+        try {
+            decryptObj(result);
+        } catch (Exception e) {
+            if (failFast) {
+                throw new MybatisCryptoException(e);
+            } else {
+                log.warn("decrypt filed error.", e);
             }
         }
         return result;
     }
 
-    private void decryptEntity(Set<Field> encryptedFields, Object item) throws MybatisCryptoException {
-        if (encryptedFields == null || encryptedFields.isEmpty()) {
+    private void decryptObj(Object obj) throws Exception {
+        if (obj == null) {
             return;
         }
-        for (Field field : encryptedFields) {
-            EncryptedField encryptedField = field.getAnnotation(EncryptedField.class);
-            if (encryptedField != null) {
-                try {
-                    String key = Util.getKeyOrDefault(encryptedField, defaultKey);
-                    IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
-                    field.setAccessible(true);
-                    Object originalVal = field.get(item);
-                    if (originalVal != null) {
-                        String decryptedVal = iEncryptor.decrypt(originalVal.toString(), key);
-                        field.set(item, decryptedVal);
-                    }
-                } catch (Exception e) {
-                    if (failFast) {
-                        throw new MybatisCryptoException(e);
-                    } else {
-                        log.warn("decrypt filed error.", e);
-                    }
+        if (obj instanceof Collection) {
+            Collection<?> list = (Collection<?>) obj;
+            if (list.isEmpty()) {
+                return;
+            }
+            Object firstNonNullItem = list.stream().filter(Objects::nonNull).findFirst().orElse(null);
+            if (!Util.decryptionRequired(firstNonNullItem)) {
+                return;
+            }
+            Set<Field> encryptedFields = EncryptedFieldsProvider.get(firstNonNullItem.getClass());
+            if (encryptedFields == null || encryptedFields.isEmpty()) {
+                return;
+            }
+            for (Object item : list) {
+                decryptObj(item);
+            }
+        } else {
+            if (Util.decryptionRequired(obj)) {
+                Set<Field> encryptedFields = EncryptedFieldsProvider.get(obj.getClass());
+                if (encryptedFields == null || encryptedFields.isEmpty()) {
+                    return;
+                }
+                for (Field field : encryptedFields) {
+                    decryptField(field, obj);
                 }
             }
+        }
+    }
+
+    private void decryptField(Field field, Object obj) throws Exception {
+        EncryptedField encryptedField = field.getAnnotation(EncryptedField.class);
+        if (encryptedField == null) {
+            return;
+        }
+        Object cipher = field.get(obj);
+        if (cipher == null) {
+            return;
+        }
+        if (cipher instanceof String) {
+            String key = Util.getKeyOrDefault(encryptedField, defaultKey);
+            IEncryptor iEncryptor = EncryptorProvider.getOrDefault(encryptedField, defaultEncryptor);
+            String plain = iEncryptor.decrypt(cipher.toString(), key);
+            field.set(obj, plain);
+        } else {
+            decryptObj(cipher);
         }
     }
 
