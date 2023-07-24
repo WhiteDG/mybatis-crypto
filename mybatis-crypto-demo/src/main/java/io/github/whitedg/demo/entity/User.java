@@ -1,6 +1,5 @@
 package io.github.whitedg.demo.entity;
 
-import io.github.whitedg.demo.encryptor.MyEncryptor;
 import io.github.whitedg.mybatis.crypto.Base64Encryptor;
 import io.github.whitedg.mybatis.crypto.EncryptedField;
 import io.github.whitedg.mybatis.crypto.StrongTextEncryptor;
@@ -14,10 +13,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Accessors(chain = true)
-public class User extends BaseEntity {
-
-    @EncryptedField(encryptor = MyEncryptor.class)
-    private String name;
+public class User extends SimpleUser {
 
     @EncryptedField(encryptor = Base64Encryptor.class)
     private String email;
