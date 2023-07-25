@@ -51,7 +51,6 @@
         <mybatis.version>3.5.8</mybatis.version>
         <slf4j.version>1.7.32</slf4j.version>
         <spring-boot.version>2.7.1</spring-boot.version>
-        <kryo.version>5.2.1</kryo.version>
 
         <!-- plugin -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -87,11 +86,6 @@
                 <groupId>io.github.whitedg</groupId>
                 <artifactId>mybatis-crypto-core</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.esotericsoftware.kryo</groupId>
-                <artifactId>kryo5</artifactId>
-                <version>5.2.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
