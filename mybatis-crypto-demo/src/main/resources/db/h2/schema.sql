@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS `t_user`;
+DROP TABLE IF EXISTS `t_address`;
 
 CREATE TABLE `t_user`
 (

@@ -3,6 +3,7 @@ DATABASE `mybatis_crypto` CHARACTER
 SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 DROP TABLE IF EXISTS `t_user`;
+DROP TABLE IF EXISTS `t_address`;
 
 CREATE TABLE `t_user`
 (
