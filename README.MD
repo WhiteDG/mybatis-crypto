@@ -3,24 +3,25 @@
 <a href="https://github.com/WhiteDG/mybatis-crypto/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/WhiteDG/mybatis-crypto.svg?style=flat-square&label=latest version"/></a>
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/WhiteDG/mybatis-crypto?style=flat-square">
 <a href="https://github.com/WhiteDG/mybatis-crypto/actions"><img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/WhiteDG/mybatis-crypto/release.yml?style=flat-square"></a>
+<br> English | <a href="README_CN.MD">中文</a>
 
+## Introduction
 
-## 简介
+`mybatis-crypto` is a field encryption and decryption component based on the MyBatis plugin mechanism. It allows you to
+encrypt and decrypt sensitive data with a simple annotation. It supports custom Encryptor, specifying separate Encryptor
+and key for special fields, and meets most use cases.
 
-`mybatis-crypto` 是一个基于 mybatis 插件机制实现的字段加解密组件，通过一个注解即可对敏感数据进行加解密处理。 支持自定义 `Encryptor`、特殊字段单独指定 `Encryptor` 和 `key`
-，满足大部分使用场景。
+## Modules
 
-## 模块
+`mybatis-crypto` consists of three modules:
 
-`mybatis-crypto` 包括三个模块：
+- `mybatis-crypto-core` The core functionality module of the plugin.
+- `mybatis-crypto-spring-boot-starter` Provides quick integration with `Spring Boot`.
+- `mybatis-crypto-encryptors` Provides several `IEncryptor` implementations.
 
-- `mybatis-crypto-core`  插件的核心功能模块
-- `mybatis-crypto-spring-boot-starter` 提供了 `Spring boot` 快速整合功能
-- `mybatis-crypto-encryptors` 提供了一些 IEncryptor 实现
+## Usage
 
-## 使用方法
-
-1. 引入依赖
+1. Add the dependency
 
 ```xml
 
@@ -31,7 +32,7 @@
 </dependency>
 ```
 
-2. 实现 IEncryptor
+2. Implement the IEncryptor
 
 ```java
 import io.github.whitedg.mybatis.crypto.IEncryptor;
@@ -40,19 +41,19 @@ public class MyEncryptor implements IEncryptor {
 
     @Override
     public String encrypt(Object val2bEncrypted, String key) throws Exception {
-        // 实现这个方法返回加密后的数据
+        // Implement this method to return the encrypted data
         return "encrypted string";
     }
 
     @Override
     public String decrypt(Object val2bDecrypted, String key) throws Exception {
-        // 实现这个方法返回解密后的数据
+        // Implement this method to return the decrypted data
         return "decrypted string";
     }
 }
 ```
 
-或者引入 `mybatis-crypto-encryptors`
+Alternatively, you can use `mybatis-crypto-encryptors`
 
 ```xml
 
@@ -63,38 +64,38 @@ public class MyEncryptor implements IEncryptor {
 </dependency>
 ```
 
-使用其提供的 `Encryptor`：
+and use the provided `Encryptor` implementations:
 
 - `io.github.whitedg.mybatis.crypto.Base64Encryptor`
 - `io.github.whitedg.mybatis.crypto.BasicTextEncryptor`
 - `io.github.whitedg.mybatis.crypto.AES256Encryptor`
 - `io.github.whitedg.mybatis.crypto.StrongTextEncryptor`
 
-3. 添加配置
+3. Add configurations
 
 ```yaml
 mybatis-crypto:
-  # 是否启用插件，默认 true
+  # Enable the plugin (default: true)
   enabled: true
-  # 快速失败，默认 true
+  # Fail fast during encryption/decryption (default: true)
   fail-fast: false
-  # 全局默认 Encryptor
+  # Global default Encryptor
   default-encryptor: io.github.whitedg.mybatis.crypto.BasicTextEncryptor
-  # Encryptor 默认密钥
+  # Default key for Encryptor
   default-key: global-key
-  # mybatis @Param 注解下需要加解密的参数 key 前缀
+  # Prefixes of @Param parameters that need to be encrypted
   mapped-key-prefixes: et,encrypted
-  # 是否启用加密字段全匹配查询，默认 false
+  # Enable encrypted field query (default: false)
   encrypted-query: true
-  # 实体包路径
+  # Entity package path
   type-packages: io.github.whitedg.**.entity
-  # 是否保留明文参数
+  # Keep plaintext parameters
   keep-parameter: true
 ```
 
-4. 指定加密字段
+4. Specify encrypted fields
 
-- 在需要加解密的字段上添加注解 `@EncryptedField`
+- Add the `@EncryptedField` annotation to the fields that need to be encrypted/decrypted
 
 ```java
 public class User {
@@ -106,7 +107,7 @@ public class User {
 }
 ```
 
-- 使用配置的 @Param 参数 key 前缀
+- Use the configured @Param parameter key prefix
 
 ```java
 import org.apache.ibatis.annotations.Param;
@@ -114,17 +115,17 @@ import org.apache.ibatis.annotations.Param;
 interface YourEntityMapper {
     int insert(@Param("et") YourEntity entity);
 
-    // 支持数组
+    // Support for List
     int batchInsert(@Param("encrypted-entities") List<YourEntity> entity);
 
-    // 字符串参数支持使用 @EncryptedField
-    // ⚠️只有一个参数的时候需要同时加上 @Param
+    // @EncryptedField can be applied to the string parameter
+    // ⚠️If there is only one parameter, @Param is also required
     int selectByName0(@EncryptedField(encryptor = YourEncryptor.class, key = "Your Key") @Param("name") String name);
 
-    // 字符串参数支持 @Param 前缀匹配(使用全局的 Encryptor 和 key)
+    // Support for string parameters using @Param key prefix(Uses the global encryptor and key)
     int selectByName1(@Param("encrypted-name") String name);
 
-    // 返回值也支持单个对象或数组
+    // The result can be an object or a List
     YourEntity selectOne();
 
     List<YourEntity> selectList();
@@ -133,17 +134,17 @@ interface YourEntityMapper {
 
 ## [Demo](https://github.com/WhiteDG/mybatis-crypto/blob/main/mybatis-crypto-demo/README.MD)
 
-## 配置项说明
+## Configuration
 
-| 配置项                                | 说明                                                     | 默认值   |
-|------------------------------------|--------------------------------------------------------|-------|
-| mybatis-crypto.enabled             | 是否启用 mybatis-crypto                                    | true  |
-| mybatis-crypto.fail-fast           | 快速失败，加解密过程中发生异常是否中断。true:抛出异常，false:使用原始值，打印 warn 级别日志 | true  |
-| mybatis-crypto.mapped-key-prefixes | @Param 参数名的前缀，前缀匹配则会进行加密处理                             | 空     |
-| mybatis-crypto.default-encryptor   | 全局默认 Encryptor                                         | 空     |
-| mybatis-crypto.encrypted-query     | 是否启用加密字段全匹配查询                                          | false |
-| mybatis-crypto.type-packages       | 实体的包路径，可选配置，配置后会在服务启动时提前将 Encryptor 加载到缓存中             | 空     |
-| mybatis-crypto.keep-parameter      | 是否保留实体的明文参数，insert/update语句执行后实体的加密字段可以选择保留明文或者用密文覆盖   | false |
+| Property                           | Description                                                                                                                                                                                | Default Value |
+|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| mybatis-crypto.enabled             | Enable mybatis-crypto                                                                                                                                                                      | true          |
+| mybatis-crypto.fail-fast           | Fail fast during encryption/decryption. true: Throw an exception; false: Use the original value and log a warning level message                                                            | true          |
+| mybatis-crypto.mapped-key-prefixes | Prefixes for @Param parameter names. If a parameter name matches any of the prefixes, encryption/decryption will be applied.                                                               | null          |
+| mybatis-crypto.default-encryptor   | Global default Encryptor class name                                                                                                                                                        | null          |
+| mybatis-crypto.encrypted-query     | Whether to enable exact matching for encrypted field queries                                                                                                                               | false         |
+| mybatis-crypto.type-packages       | Package paths of entity classes. Optional configuration. If configured, the Encryptor will be loaded into the cache during service startup                                                 | null          |
+| mybatis-crypto.keep-parameter      | Whether to keep plaintext parameters of entities. After executing insert/update statements, encrypted fields of entities can choose to keep the plaintext or overwrite with the ciphertext | false         |
 
 ## LICENSE
 
