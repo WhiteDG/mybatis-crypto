@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * @author White
  */
-public class AbsEncryptionPlugin implements Interceptor {
+class AbsEncryptionPlugin implements Interceptor {
 
     private static final Logger log = LoggerFactory.getLogger(MybatisEncryptionPlugin.class);
 
