@@ -44,12 +44,12 @@
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-spring-boot-starter</artifactId>
-            <version>1.2.4</version>
+            <version>1.2.5</version>
         </dependency>
         <dependency>
             <groupId>io.github.whitedg</groupId>
             <artifactId>mybatis-crypto-encryptors</artifactId>
-            <version>1.2.4</version>
+            <version>1.2.5</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
         <dependency>
