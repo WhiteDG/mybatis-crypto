@@ -38,11 +38,13 @@ class AbsEncryptionPlugin implements Interceptor {
         Object parameter = args[1];
         if (Util.encryptionRequired(parameter, ms.getSqlCommandType())) {
             doEncrypt(parameter, ms);
-            Object result = invocation.proceed();
-            if (keepParameter) {
-                doDecrypt(parameter, ms);
+            try {
+                return invocation.proceed();
+            } finally {
+                if (keepParameter) {
+                    doDecrypt(parameter, ms);
+                }
             }
-            return result;
         } else {
             return invocation.proceed();
         }
